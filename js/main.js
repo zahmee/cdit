@@ -52,10 +52,12 @@ if (statsSection) {
       started = true;
       statItems.forEach(item => {
         const target = parseInt(item.dataset.target);
+        if (!Number.isFinite(target)) return; // non-numeric stats (e.g. "سجل تجاري") stay as-is
         const suffix = item.dataset.suffix || '';
         const duration = 2000;
         const startTime = performance.now();
         const numEl = item.querySelector('.num');
+        if (!numEl) return;
 
         function animate(now) {
           const progress = Math.min((now - startTime) / duration, 1);
@@ -82,44 +84,96 @@ if (waBtn && waPanel) {
   });
 }
 
-// ========== Contact Form ==========
+// ========== Contact Form → WhatsApp ==========
 const contactForm = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
-const formError = document.getElementById('form-error');
+const formContainer = document.getElementById('form-container');
+const WA_PHONE = '966502010911';
+
+function buildWaMessage(fields) {
+  const lines = [`السلام عليكم، أنا ${fields.name}`, ''];
+  lines.push(`📱 رقم الجوال: ${fields.phone}`);
+  if (fields.email) lines.push(`📧 البريد: ${fields.email}`);
+  if (fields.service) lines.push(`🔧 الخدمة المطلوبة: ${fields.service}`);
+  lines.push('', '💬 الرسالة:', fields.message, '', '—', 'مرسلة من موقع cdit.co');
+  return lines.join('\n');
+}
+
+function buildWaUrl(text) {
+  return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(text)}`;
+}
 
 if (contactForm) {
-  contactForm.addEventListener('submit', async (e) => {
+  contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const btn = contactForm.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> جاري الإرسال...';
-    formError.style.display = 'none';
 
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 1500));
+    const fd = new FormData(contactForm);
+    const fields = {
+      name: (fd.get('name') || '').trim(),
+      phone: (fd.get('phone') || '').trim(),
+      email: (fd.get('email') || '').trim(),
+      service: (fd.get('service') || '').trim(),
+      message: (fd.get('message') || '').trim(),
+    };
 
-    // Show success
-    contactForm.style.display = 'none';
-    formSuccess.style.display = 'block';
+    const waUrl = buildWaUrl(buildWaMessage(fields));
 
-    // Open WhatsApp
-    const phone = '966502010911';
-    const name = contactForm.querySelector('[name="name"]').value;
-    const message = contactForm.querySelector('[name="message"]').value;
-    const waText = encodeURIComponent(`مرحباً، أنا ${name}. ${message}`);
-    window.open(`https://wa.me/${phone}?text=${waText}`, '_blank');
+    // Must be called synchronously from the submit handler to avoid popup blockers
+    window.open(waUrl, '_blank', 'noopener');
 
-    btn.disabled = false;
-    btn.innerHTML = originalText;
+    // Update the manual fallback link (in case the popup was blocked)
+    const fallback = document.getElementById('wa-fallback-link');
+    if (fallback) fallback.href = waUrl;
+
+    // Swap in the confirmation view
+    if (formContainer) formContainer.style.display = 'none';
+    if (formSuccess) formSuccess.style.display = 'block';
   });
 
   // Reset form
   document.getElementById('btn-reset')?.addEventListener('click', () => {
     contactForm.reset();
-    contactForm.style.display = 'block';
-    formSuccess.style.display = 'none';
-    formError.style.display = 'none';
+    if (formContainer) formContainer.style.display = 'block';
+    if (formSuccess) formSuccess.style.display = 'none';
+  });
+}
+
+// ========== Screenshot Lightbox ==========
+const lightbox = document.getElementById('lightbox');
+if (lightbox) {
+  const lbImg = document.getElementById('lightbox-img');
+  const lbCaption = document.getElementById('lightbox-caption');
+  const lbClose = document.getElementById('lightbox-close');
+
+  const openLightbox = (src, caption, alt) => {
+    lbImg.src = src;
+    lbImg.alt = alt || caption || '';
+    lbCaption.textContent = caption || '';
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  const closeLightbox = () => {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+    // Defer clearing src so the closing animation (if any) is smooth
+    setTimeout(() => { lbImg.src = ''; }, 150);
+  };
+
+  document.querySelectorAll('.edition-shot').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const src = btn.dataset.src;
+      const caption = btn.dataset.caption || '';
+      const alt = btn.querySelector('img')?.alt || '';
+      if (src) openLightbox(src, caption, alt);
+    });
+  });
+
+  lbClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
   });
 }
 
