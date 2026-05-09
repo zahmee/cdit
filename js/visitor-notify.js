@@ -1,21 +1,18 @@
 /**
- * Visitor Notification Script - Telegram Integration
- * Sends a silent notification to Telegram when a visitor loads any page.
- * Completely invisible to the user - no UI elements, no console logs.
+ * Visitor Notification Script — sends a silent visit notification to Telegram
+ * via the CDIT Cloudflare Worker proxy. No bot token is exposed in this file.
+ *
+ * Worker URL is read from window.CDIT_TG_PROXY_URL (set by js/main.js).
+ * See worker/README.md for deployment instructions.
  */
 (function () {
   'use strict';
-
-  const BOT_TOKEN = '8382959043:AAHSh9M8i4ReIlMaK_rD_vL2vcqvQxgDexA';
-  const CHAT_ID = '7893804';
-  const TELEGRAM_API = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
 
   function getDeviceInfo() {
     const ua = navigator.userAgent;
     let device = 'Unknown';
     let browser = 'Unknown';
 
-    // Detect device type
     if (/Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(ua)) {
       device = 'Mobile';
       if (/iPad/i.test(ua)) device = 'Tablet';
@@ -23,7 +20,6 @@
       device = 'Desktop';
     }
 
-    // Detect browser
     if (/Edg\//i.test(ua)) browser = 'Edge';
     else if (/OPR\//i.test(ua)) browser = 'Opera';
     else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = 'Chrome';
@@ -43,7 +39,8 @@
       'contact.html': '📞 تواصل معنا',
       'portfolio.html': '💼 أعمالنا',
       'products.html': '📦 منتجاتنا',
-      'services.html': '🔧 خدماتنا'
+      'services.html': '🔧 خدماتنا',
+      'news.html': '📰 أخبار التقنية'
     };
     return names[page] || '📄 ' + page;
   }
@@ -63,6 +60,12 @@
   }
 
   function sendNotification() {
+    const proxyUrl = window.CDIT_TG_PROXY_URL;
+    if (!proxyUrl || proxyUrl.includes('YOUR-ACCOUNT')) {
+      // Worker URL not configured yet — skip silently to avoid noise during setup.
+      return;
+    }
+
     const { device, browser } = getDeviceInfo();
     const pageName = getPageName();
     const referrer = getReferrer();
@@ -85,34 +88,16 @@
 🌐 اللغة: ${navigator.language || 'غير محدد'}
 🔗 من: ${referrer}`;
 
-    // Use sendBeacon for reliability (works even if page closes quickly)
-    const payload = JSON.stringify({
-      chat_id: CHAT_ID,
-      text: message,
-      parse_mode: 'Markdown',
-      disable_notification: false
+    fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'visit', message }),
+      keepalive: true
+    }).catch(function () {
+      // Silently fail — visitors shouldn't see anything
     });
-
-    // Primary: use fetch with keepalive
-    if (typeof fetch !== 'undefined') {
-      fetch(TELEGRAM_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true
-      }).catch(function () {
-        // Silently fail - user should not see any errors
-      });
-    } else {
-      // Fallback: use Image beacon
-      const data = 'chat_id=' + encodeURIComponent(CHAT_ID) +
-        '&text=' + encodeURIComponent(message) +
-        '&parse_mode=' + encodeURIComponent('Markdown');
-      new Image().src = TELEGRAM_API + '?' + data;
-    }
   }
 
-  // Send notification when page is fully loaded
   if (document.readyState === 'complete') {
     sendNotification();
   } else {

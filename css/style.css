@@ -227,9 +227,12 @@ input, textarea, select { font-family: inherit; }
 #main-header.scrolled { background: #fff; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 0.5rem 0; }
 #main-header.transparent .logo-text,
 #main-header.transparent .nav-link { color: #fff; }
+#main-header.transparent .logo-sub { color: rgba(255, 255, 255, 0.8); }
+#main-header.transparent .header-phone { color: #fff; }
 #main-header.scrolled .logo-text,
 #main-header.scrolled .nav-link { color: var(--gray-700); }
 #main-header.scrolled .logo-sub { color: var(--gray-500); }
+#main-header.scrolled .header-phone { color: var(--gray-700); }
 
 .header-inner { display: flex; align-items: center; justify-content: space-between; }
 .logo { display: flex; align-items: center; gap: 0.75rem; }

@@ -89,10 +89,9 @@ const contactForm = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
 const formContainer = document.getElementById('form-container');
 
-// ========== Telegram Bot Config ==========
-const TG_BOT_TOKEN = '8382959043:AAHSh9M8i4ReIlMaK_rD_vL2vcqvQxgDexA';
-const TG_CHAT_ID = '7893804';
-const TG_API = 'https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage';
+// ========== Telegram Proxy (Cloudflare Worker) ==========
+// Replace this URL with your deployed Worker URL. See worker/README.md for setup.
+window.CDIT_TG_PROXY_URL = window.CDIT_TG_PROXY_URL || 'https://cdit-telegram-proxy.zahmee.workers.dev';
 
 function sendFormToTelegram(fields) {
   const now = new Date();
@@ -116,15 +115,10 @@ ${fields.message || '—'}
 🕐 *الوقت:* ${timeStr}
 🌐 *من صفحة:* تواصل معنا — cdit.co/contact.html`;
 
-  fetch(TG_API, {
+  fetch(window.CDIT_TG_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: TG_CHAT_ID,
-      text: message,
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true
-    }),
+    body: JSON.stringify({ type: 'contact', message }),
     keepalive: true
   }).catch(() => {});
 }
