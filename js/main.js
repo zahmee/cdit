@@ -88,19 +88,45 @@ if (waBtn && waPanel) {
 const contactForm = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
 const formContainer = document.getElementById('form-container');
-const WA_PHONE = '966502010911';
 
-function buildWaMessage(fields) {
-  const lines = [`السلام عليكم، أنا ${fields.name}`, ''];
-  lines.push(`📱 رقم الجوال: ${fields.phone}`);
-  if (fields.email) lines.push(`📧 البريد: ${fields.email}`);
-  if (fields.service) lines.push(`🔧 الخدمة المطلوبة: ${fields.service}`);
-  lines.push('', '💬 الرسالة:', fields.message, '', '—', 'مرسلة من موقع cdit.co');
-  return lines.join('\n');
-}
+// ========== Telegram Bot Config ==========
+const TG_BOT_TOKEN = '8382959043:AAHSh9M8i4ReIlMaK_rD_vL2vcqvQxgDexA';
+const TG_CHAT_ID = '7893804';
+const TG_API = 'https://api.telegram.org/bot' + TG_BOT_TOKEN + '/sendMessage';
 
-function buildWaUrl(text) {
-  return `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(text)}`;
+function sendFormToTelegram(fields) {
+  const now = new Date();
+  const timeStr = now.toLocaleString('ar-SA', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+  });
+
+  const message = `📬 *رسالة جديدة من موقع CDIT*
+
+━━━━━━━━━━━━━━━━━━
+👤 *الاسم:* ${fields.name || '—'}
+📱 *الجوال:* ${fields.phone || '—'}
+📧 *البريد:* ${fields.email || '—'}
+🔧 *الخدمة:* ${fields.service || '—'}
+
+💬 *الرسالة:*
+${fields.message || '—'}
+━━━━━━━━━━━━━━━━━━
+
+🕐 *الوقت:* ${timeStr}
+🌐 *من صفحة:* تواصل معنا — cdit.co/contact.html`;
+
+  fetch(TG_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TG_CHAT_ID,
+      text: message,
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true
+    }),
+    keepalive: true
+  }).catch(() => {});
 }
 
 if (contactForm) {
@@ -116,16 +142,10 @@ if (contactForm) {
       message: (fd.get('message') || '').trim(),
     };
 
-    const waUrl = buildWaUrl(buildWaMessage(fields));
+    // Send to Telegram
+    sendFormToTelegram(fields);
 
-    // Must be called synchronously from the submit handler to avoid popup blockers
-    window.open(waUrl, '_blank', 'noopener');
-
-    // Update the manual fallback link (in case the popup was blocked)
-    const fallback = document.getElementById('wa-fallback-link');
-    if (fallback) fallback.href = waUrl;
-
-    // Swap in the confirmation view
+    // Show success message
     if (formContainer) formContainer.style.display = 'none';
     if (formSuccess) formSuccess.style.display = 'block';
   });
@@ -189,3 +209,88 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
+
+// ========== Prayer Times Widget (Riyadh, Umm al-Qura) ==========
+const PRAYER_API = 'https://api.aladhan.com/v1/timingsByCity?city=Riyadh&country=SA&method=4';
+const PRAYER_NAMES_AR = { Fajr: 'الفجر', Dhuhr: 'الظهر', Asr: 'العصر', Maghrib: 'المغرب', Isha: 'العشاء' };
+const PRAYER_ORDER = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const PRAYER_CACHE_KEY = 'cdit_prayer_v1';
+
+async function fetchPrayerData() {
+  const today = new Date().toDateString();
+  try {
+    const cached = JSON.parse(localStorage.getItem(PRAYER_CACHE_KEY) || 'null');
+    if (cached && cached.day === today) return cached.data;
+  } catch (e) {}
+
+  const res = await fetch(PRAYER_API);
+  if (!res.ok) throw new Error('Prayer API request failed');
+  const json = await res.json();
+  const data = { timings: json.data.timings, hijri: json.data.date.hijri };
+  try { localStorage.setItem(PRAYER_CACHE_KEY, JSON.stringify({ day: today, data })); } catch (e) {}
+  return data;
+}
+
+function getNextPrayer(timings) {
+  const now = new Date();
+  for (const name of PRAYER_ORDER) {
+    const raw = (timings[name] || '').split(' ')[0]; // strip "(AST)" if present
+    const [h, m] = raw.split(':').map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) continue;
+    const t = new Date();
+    t.setHours(h, m, 0, 0);
+    if (t > now) return { name, time: raw, at: t };
+  }
+  return null;
+}
+
+function formatPrayerCountdown(ms) {
+  const totalMin = Math.max(0, Math.floor(ms / 60000));
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? h + 'س ' + m + 'د' : m + 'د';
+}
+
+function renderPrayer(data) {
+  const list = document.getElementById('prayer-list');
+  const hijriEl = document.getElementById('prayer-hijri');
+  const cdEl = document.getElementById('prayer-countdown');
+  if (!list || !hijriEl || !cdEl) return;
+
+  const next = getNextPrayer(data.timings);
+  hijriEl.textContent = data.hijri.day + ' ' + data.hijri.month.ar + ' ' + data.hijri.year + 'هـ';
+
+  list.innerHTML = PRAYER_ORDER.map(name => {
+    const cls = next && next.name === name ? 'next' : '';
+    const time = (data.timings[name] || '').split(' ')[0];
+    return '<li class="' + cls + '"><span>' + PRAYER_NAMES_AR[name] + '</span><span class="time">' + time + '</span></li>';
+  }).join('');
+
+  if (next) {
+    cdEl.textContent = formatPrayerCountdown(next.at - new Date());
+  } else {
+    cdEl.textContent = 'الفجر';
+  }
+}
+
+async function initPrayerWidget() {
+  const root = document.getElementById('prayer-float');
+  if (!root) return;
+  let data;
+  try {
+    data = await fetchPrayerData();
+  } catch (e) {
+    return; // API failure → keep widget hidden, site continues normally
+  }
+
+  root.hidden = false;
+  renderPrayer(data);
+  setInterval(() => renderPrayer(data), 60000);
+
+  const btn = document.getElementById('prayer-float-btn');
+  const closeBtn = document.getElementById('prayer-panel-close');
+  if (btn) btn.addEventListener('click', () => root.classList.toggle('open'));
+  if (closeBtn) closeBtn.addEventListener('click', () => root.classList.remove('open'));
+}
+
+initPrayerWidget();
