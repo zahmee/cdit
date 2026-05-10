@@ -93,6 +93,10 @@ const formContainer = document.getElementById('form-container');
 // Replace this URL with your deployed Worker URL. See worker/README.md for setup.
 window.CDIT_TG_PROXY_URL = window.CDIT_TG_PROXY_URL || 'https://cdit-telegram-proxy.zahmee.workers.dev';
 
+// ========== AI Agent (Cloudflare Worker → DeepSeek) ==========
+// Replace with your deployed cdit-ai-agent Worker URL. See worker/AI_AGENT_README.md for setup.
+window.CDIT_AI_AGENT_URL = window.CDIT_AI_AGENT_URL || 'https://cdit-ai-agent.zahmee.workers.dev';
+
 function sendFormToTelegram(fields) {
   const now = new Date();
   const timeStr = now.toLocaleString('ar-SA', {

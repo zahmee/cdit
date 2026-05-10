@@ -154,6 +154,14 @@
               <div class="float-badge b1">✓ متاح الآن</div>
 
             </div>
+            <button type="button" class="ai-agent-card-hero" id="ai-agent-hero-trigger">
+              <span class="ai-agent-card-hero__icon" aria-hidden="true">✨</span>
+              <span class="ai-agent-card-hero__body">
+                <span class="ai-agent-card-hero__title">جرّب مساعد إبداع الذكي</span>
+                <span class="ai-agent-card-hero__sub">اسأله عن خدماتنا، منتجاتنا، أو اطلب عرضاً</span>
+              </span>
+              <span class="ai-agent-card-hero__cta" aria-hidden="true">←</span>
+            </button>
           </div>
         </div>
       </div>
@@ -581,6 +589,9 @@
     </button>
   </div>
 
+  <!-- AI Agent root: chip trigger + chat panel mounted by js/ai-agent.js -->
+  <div id="ai-agent-root"></div>
+
   <!-- WhatsApp Float -->
   <div class="whatsapp-float">
     <div class="whatsapp-panel" id="wa-panel">
@@ -616,6 +627,7 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/ai-agent.js" defer></script>
   <script src="js/news.js" defer></script>
   <script src="js/visitor-notify.js" defer></script>
 </body>

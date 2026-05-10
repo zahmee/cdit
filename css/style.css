@@ -1802,3 +1802,376 @@ footer.main-footer { background: var(--secondary); color: #fff; }
 @media (max-width: 480px) {
   .prayer-panel { width: calc(100vw - 3rem); }
 }
+
+/* ============================================================================ */
+/* AI Agent — مساعد إبداع                                                        */
+/* ============================================================================ */
+
+/* بطاقة الـ hero (مدمجة، تحت glass-card "2014") */
+.ai-agent-card-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.88) 100%);
+  border: 1px solid rgba(0, 212, 170, 0.45);
+  border-radius: 0.875rem;
+  cursor: pointer;
+  text-align: right;
+  font-family: inherit;
+  box-shadow: 0 8px 24px -12px rgba(0,0,0,0.25), 0 0 0 0 rgba(0, 212, 170, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.ai-agent-card-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(0, 212, 170, 0.08) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.ai-agent-card-hero:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 16px 40px -12px rgba(0, 212, 170, 0.4);
+}
+.ai-agent-card-hero:hover::before { transform: translateX(100%); }
+
+.ai-agent-card-hero__icon {
+  flex-shrink: 0;
+  width: 2.5rem; height: 2.5rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+  color: #fff;
+  border-radius: 0.75rem;
+  font-size: 1.125rem;
+}
+.ai-agent-card-hero__body {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 0.125rem;
+  min-width: 0;
+}
+.ai-agent-card-hero__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--secondary);
+}
+.ai-agent-card-hero__sub {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+.ai-agent-card-hero__cta {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.75rem; height: 1.75rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* الشريحة العائمة (تظهر بعد التمرير عن الـ hero) */
+.ai-agent-chip {
+  position: fixed;
+  bottom: 6rem;
+  left: 1.5rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem 0.625rem 0.875rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 32px -8px rgba(14, 117, 161, 0.55);
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(.2,.7,.2,1), opacity 0.35s, box-shadow 0.25s;
+}
+.ai-agent-chip.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.ai-agent-chip.is-hidden {
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
+}
+.ai-agent-chip:hover {
+  box-shadow: 0 18px 40px -8px rgba(14, 117, 161, 0.7);
+  transform: translateY(-2px);
+}
+.ai-agent-chip__sparkle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.5rem; height: 1.5rem;
+  background: rgba(255,255,255,0.2);
+  border-radius: 9999px;
+  font-size: 0.85rem;
+}
+.ai-agent-chip__label { white-space: nowrap; }
+
+/* لوحة المحادثة */
+.ai-agent-panel {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  width: 22rem;
+  max-width: calc(100vw - 3rem);
+  max-height: min(70vh, 600px);
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--gray-100);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+  overflow: hidden;
+  animation: fadeIn 0.25s ease-out;
+}
+.ai-agent-panel.is-open { display: flex; }
+
+.ai-agent-panel__header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(135deg, #0e75a1 0%, #0a5a7c 50%, #1a1a2e 100%);
+  color: #fff;
+}
+.ai-agent-panel__brand {
+  display: flex; align-items: center; gap: 0.625rem;
+  min-width: 0;
+}
+.ai-agent-panel__avatar {
+  flex-shrink: 0;
+  width: 2.25rem; height: 2.25rem;
+  background: linear-gradient(135deg, var(--accent) 0%, #00a386 100%);
+  border-radius: 9999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.ai-agent-panel__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+.ai-agent-panel__status {
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  font-size: 0.72rem;
+  color: #bfdbfe;
+  margin-top: 0.125rem;
+}
+.ai-agent-panel__status-dot {
+  width: 0.5rem; height: 0.5rem;
+  background: #22c55e;
+  border-radius: 9999px;
+  animation: pulseGlow 2s infinite;
+}
+.ai-agent-panel__close {
+  flex-shrink: 0;
+  width: 1.75rem; height: 1.75rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border-radius: 9999px;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ai-agent-panel__close:hover { background: rgba(255,255,255,0.22); }
+
+.ai-agent-panel__messages {
+  flex: 1;
+  min-height: 12rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: var(--gray-50);
+}
+.ai-agent-panel__messages::-webkit-scrollbar { width: 6px; }
+.ai-agent-panel__messages::-webkit-scrollbar-thumb { background: var(--gray-300, #d1d5db); border-radius: 9999px; }
+
+.ai-agent-bubble {
+  max-width: 85%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  animation: fadeIn 0.2s ease-out;
+}
+.ai-agent-bubble--user {
+  align-self: flex-end;
+  background: var(--primary);
+  color: #fff;
+  border-bottom-right-radius: 0.25rem;
+}
+.ai-agent-bubble--bot {
+  align-self: flex-start;
+  background: #fff;
+  color: var(--gray-900);
+  border: 1px solid var(--gray-100);
+  border-bottom-left-radius: 0.25rem;
+}
+.ai-agent-bubble.is-typing::after {
+  content: '▍';
+  display: inline-block;
+  margin-right: 0.125rem;
+  color: var(--primary);
+  animation: aiBlink 1s steps(1) infinite;
+}
+@keyframes aiBlink { 50% { opacity: 0; } }
+
+/* الردود السريعة */
+.ai-agent-quick-replies {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+.ai-agent-quick-reply {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(14, 117, 161, 0.18);
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.ai-agent-quick-reply:hover {
+  background: rgba(14, 117, 161, 0.15);
+  transform: translateY(-1px);
+}
+
+/* شريط تأكيد الـ lead */
+.ai-agent-lead-progress {
+  align-self: stretch;
+  padding: 0.625rem 0.875rem;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  animation: fadeIn 0.2s ease-out;
+}
+.ai-agent-lead-sent {
+  align-self: stretch;
+  display: flex; align-items: flex-start; gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.75rem;
+  font-size: 0.82rem;
+  animation: fadeIn 0.25s ease-out;
+}
+.ai-agent-lead-sent.is-ok { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.ai-agent-lead-sent.is-fail { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.ai-agent-lead-sent__icon {
+  flex-shrink: 0;
+  width: 1.5rem; height: 1.5rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.ai-agent-lead-sent.is-ok .ai-agent-lead-sent__icon { background: #15803d; color: #fff; }
+.ai-agent-lead-sent.is-fail .ai-agent-lead-sent__icon { background: #b91c1c; color: #fff; }
+.ai-agent-lead-sent__title { font-weight: 700; margin-bottom: 0.125rem; }
+.ai-agent-lead-sent__cta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: underline;
+  color: inherit;
+}
+
+/* تنبيه أسفل الرسائل */
+.ai-agent-panel__disclaimer {
+  padding: 0.5rem 1rem;
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-100);
+  font-size: 0.7rem;
+  color: var(--gray-500);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* صف الإدخال */
+.ai-agent-panel__input-row {
+  display: flex; align-items: flex-end; gap: 0.5rem;
+  padding: 0.625rem 0.75rem 0.75rem;
+  background: #fff;
+  border-top: 1px solid var(--gray-100);
+}
+.ai-agent-panel__textarea {
+  flex: 1;
+  min-height: 2.5rem;
+  max-height: 7.5rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 0.75rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--gray-900);
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ai-agent-panel__textarea:focus {
+  border-color: var(--primary);
+  background: #fff;
+}
+.ai-agent-panel__textarea:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.ai-agent-panel__send {
+  flex-shrink: 0;
+  width: 2.5rem; height: 2.5rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s, opacity 0.15s;
+}
+.ai-agent-panel__send:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+.ai-agent-panel__send:disabled { opacity: 0.55; cursor: wait; }
+.ai-agent-panel__send.is-loading svg { animation: aiSpin 1s linear infinite; }
+@keyframes aiSpin { to { transform: rotate(360deg); } }
+
+/* جوال: bottom-sheet */
+@media (max-width: 640px) {
+  .ai-agent-panel {
+    left: 0; right: 0; bottom: 0;
+    width: auto;
+    max-width: none;
+    max-height: 85vh;
+    border-radius: 1rem 1rem 0 0;
+    border-bottom: none;
+  }
+  .ai-agent-chip {
+    bottom: 5.5rem;
+    left: 1rem;
+  }
+  .ai-agent-card-hero { padding: 0.75rem; }
+  .ai-agent-card-hero__title { font-size: 0.88rem; }
+  .ai-agent-card-hero__sub { font-size: 0.72rem; }
+}

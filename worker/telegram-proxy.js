@@ -65,7 +65,7 @@ export default {
 
     const { type, message } = body || {};
 
-    if (type !== 'visit' && type !== 'contact') {
+    if (type !== 'visit' && type !== 'contact' && type !== 'ai_lead') {
       return jsonResponse({ error: 'bad_type' }, 400, cors);
     }
 
