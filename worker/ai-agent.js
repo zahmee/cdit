@@ -2,12 +2,16 @@
 //
 // يستلم طلبات المحادثة من cdit.co، يحقن الـ system prompt + tool schema،
 // يستدعي DeepSeek ببث (SSE)، يُمرّر الردّ للمتصفح. عند اكتشاف اهتمام جدّي
-// (tool call: send_lead_to_telegram) يُحوّل الـ lead للـ telegram-proxy.
+// (tool call: send_lead_to_telegram) يستدعي Telegram API مباشرة لإرسال الـ lead
+// لمحادثة المالك (لا يمر عبر cdit-telegram-proxy لتفادي Cloudflare error 1042).
 //
 // النشر: dashboard.cloudflare.com → Workers → Create Worker → الصق هذا الملف.
 // Bindings: KV namespace باسم RATE_LIMIT_KV
-// Secrets: DEEPSEEK_API_KEY (Secret), TELEGRAM_PROXY_URL (Plain text)
-// تفاصيل أكثر في worker/AI_AGENT_README.md
+// Secrets (الثلاثة من نوع Secret):
+//   - DEEPSEEK_API_KEY        مفتاح DeepSeek API
+//   - TELEGRAM_BOT_TOKEN      توكن البوت من @BotFather
+//   - TELEGRAM_CHAT_ID        معرّف محادثة المالك
+// تفاصيل النشر الكاملة في worker/AI_AGENT_README.md
 
 const ALLOWED_ORIGINS = new Set([
   'https://cdit.co',
