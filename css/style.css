@@ -2175,3 +2175,10 @@ footer.main-footer { background: var(--secondary); color: #fff; }
   .ai-agent-card-hero__title { font-size: 0.88rem; }
   .ai-agent-card-hero__sub { font-size: 0.72rem; }
 }
+
+/* Language switch button */
+.lang-switch-btn { font-size:.8rem;font-weight:700;border-radius:6px;padding:.3rem .75rem;text-decoration:none;transition:background .2s,color .2s,border-color .2s;white-space:nowrap }
+#main-header.scrolled .lang-switch-btn { color:var(--primary);border:1.5px solid var(--primary) }
+#main-header.scrolled .lang-switch-btn:hover { background:var(--primary);color:#fff }
+#main-header.transparent .lang-switch-btn { color:#fff;border:1.5px solid rgba(255,255,255,0.65) }
+#main-header.transparent .lang-switch-btn:hover { background:rgba(255,255,255,0.15);color:#fff }

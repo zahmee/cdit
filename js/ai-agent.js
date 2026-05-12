@@ -5,6 +5,7 @@
 // الـ Worker يحقن system prompt + tool schema + DeepSeek key — كل اللوجك المهم هناك.
 //
 // النمط مطابق لـ visitor-notify.js: IIFE صامت، يفشل بصمت إن لم يُضبط الـ proxy URL.
+// window.CDIT_AI_LANG = 'en' على الصفحات الإنجليزية لتبديل النصوص وإرسال lang='en' للـ worker.
 
 (function () {
   'use strict';
@@ -14,19 +15,31 @@
     return; // لم يُنشر بعد، تجاهل بصمت
   }
 
+  const IS_EN = window.CDIT_AI_LANG === 'en';
+
   const STORAGE_KEY = 'cdit_ai_chat_history';
   const HISTORY_TTL_MS = 24 * 60 * 60 * 1000;
   const MAX_HISTORY = 20;
   const PHONE = '+966502010911';
-  const WHATSAPP_URL = 'https://wa.me/966502010911?text=' + encodeURIComponent('مرحباً، تواصلت مع المساعد الذكي في الموقع وأود متابعة الموضوع');
+  const WHATSAPP_URL = 'https://wa.me/966502010911?text=' + encodeURIComponent(
+    IS_EN
+      ? 'Hello, I chatted with the AI assistant on your website and would like to follow up'
+      : 'مرحباً، تواصلت مع المساعد الذكي في الموقع وأود متابعة الموضوع'
+  );
 
-  const QUICK_REPLIES = [
+  const QUICK_REPLIES = IS_EN ? [
+    'Tell me about your services',
+    'What is Al-Sadara?',
+    "I'd like to talk to your team",
+  ] : [
     'اعرض لي خدماتكم',
     'ما هي عائلة الصدارة؟',
     'أبغى أتواصل مع أحد المتواجدين',
   ];
 
-  const GREETING = 'مرحباً، أنا مساعد إبداع 👋\nأقدر أساعدك في معرفة خدماتنا، منتجاتنا، أو أرتب لك تواصل مع أحد المتواجدين الآن. كيف أقدر أخدمك؟';
+  const GREETING = IS_EN
+    ? "Hello! I'm CDIT's smart assistant 👋\nI can help you learn about our services and products, or connect you with our team. How can I help you today?"
+    : 'مرحباً، أنا مساعد إبداع 👋\nأقدر أساعدك في معرفة خدماتنا، منتجاتنا، أو أرتب لك تواصل مع أحد المتواجدين الآن. كيف أقدر أخدمك؟';
 
   // ============================================================================
   // Helpers
@@ -94,24 +107,28 @@
   const chip = el('button', {
     type: 'button',
     class: 'ai-agent-chip',
-    'aria-label': 'افتح المساعد الذكي',
+    'aria-label': IS_EN ? 'Open CDIT Assistant' : 'افتح المساعد الذكي',
   }, [
     el('span', { class: 'ai-agent-chip__sparkle', 'aria-hidden': 'true', text: '✨' }),
-    el('span', { class: 'ai-agent-chip__label', text: 'اسأل مساعد إبداع' }),
+    el('span', { class: 'ai-agent-chip__label', text: IS_EN ? 'Ask CDIT Assistant' : 'اسأل مساعد إبداع' }),
   ]);
 
   // اللوحة
-  const panel = el('div', { class: 'ai-agent-panel', role: 'dialog', 'aria-label': 'محادثة مع مساعد إبداع' });
+  const panel = el('div', {
+    class: 'ai-agent-panel',
+    role: 'dialog',
+    'aria-label': IS_EN ? 'Chat with CDIT Assistant' : 'محادثة مع مساعد إبداع',
+  });
 
   const headerStatus = el('span', { class: 'ai-agent-panel__status' }, [
     el('span', { class: 'ai-agent-panel__status-dot', 'aria-hidden': 'true' }),
-    document.createTextNode('متاح الآن'),
+    document.createTextNode(IS_EN ? 'Available Now' : 'متاح الآن'),
   ]);
 
   const closeBtn = el('button', {
     type: 'button',
     class: 'ai-agent-panel__close',
-    'aria-label': 'إغلاق',
+    'aria-label': IS_EN ? 'Close' : 'إغلاق',
     text: '×',
   });
 
@@ -119,7 +136,7 @@
     el('div', { class: 'ai-agent-panel__brand' }, [
       el('div', { class: 'ai-agent-panel__avatar', 'aria-hidden': 'true', text: '✨' }),
       el('div', {}, [
-        el('div', { class: 'ai-agent-panel__title', text: 'مساعد إبداع' }),
+        el('div', { class: 'ai-agent-panel__title', text: IS_EN ? 'CDIT Assistant' : 'مساعد إبداع' }),
         headerStatus,
       ]),
     ]),
@@ -129,21 +146,21 @@
   const messages = el('div', { class: 'ai-agent-panel__messages', role: 'log', 'aria-live': 'polite' });
 
   const disclaimer = el('div', { class: 'ai-agent-panel__disclaimer' }, [
-    document.createTextNode('هذا المساعد ذكاء اصطناعي. للتأكد تواصل واتساب '),
+    document.createTextNode(IS_EN ? 'AI assistant — to confirm, contact WhatsApp ' : 'هذا المساعد ذكاء اصطناعي. للتأكد تواصل واتساب '),
     el('span', { class: 'ltr', text: PHONE }),
   ]);
 
   const textarea = el('textarea', {
     class: 'ai-agent-panel__textarea',
-    placeholder: 'اكتب رسالتك...',
+    placeholder: IS_EN ? 'Type your message...' : 'اكتب رسالتك...',
     rows: '1',
-    'aria-label': 'رسالة',
+    'aria-label': IS_EN ? 'Message' : 'رسالة',
   });
 
   const sendBtn = el('button', {
     type: 'button',
     class: 'ai-agent-panel__send',
-    'aria-label': 'إرسال',
+    'aria-label': IS_EN ? 'Send' : 'إرسال',
   });
   sendBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
 
@@ -198,17 +215,26 @@
     if (state.leadSent) return;
     state.leadSent = true;
     const childrenInner = [
-      el('div', { class: 'ai-agent-lead-sent__title', text: ok ? 'تم إرسال طلبك لفريق CDIT' : 'تعذّر إرسال الطلب تلقائياً' }),
+      el('div', {
+        class: 'ai-agent-lead-sent__title',
+        text: ok
+          ? (IS_EN ? 'Your request was sent to the CDIT team' : 'تم إرسال طلبك لفريق CDIT')
+          : (IS_EN ? 'Failed to send request automatically' : 'تعذّر إرسال الطلب تلقائياً'),
+      }),
     ];
     if (!ok && detail) {
-      childrenInner.push(el('div', { class: 'ai-agent-lead-sent__detail', text: 'تشخيص: ' + detail, style: 'font-size:0.7rem;opacity:0.8;margin:0.25rem 0;' }));
+      childrenInner.push(el('div', {
+        class: 'ai-agent-lead-sent__detail',
+        text: (IS_EN ? 'Debug: ' : 'تشخيص: ') + detail,
+        style: 'font-size:0.7rem;opacity:0.8;margin:0.25rem 0;',
+      }));
     }
     childrenInner.push(el('a', {
       class: 'ai-agent-lead-sent__cta',
       href: WHATSAPP_URL,
       target: '_blank',
       rel: 'noopener',
-      text: 'للسرعة تواصل واتساب ←',
+      text: IS_EN ? 'Contact us on WhatsApp →' : 'للسرعة تواصل واتساب ←',
     }));
     const strip = el('div', { class: 'ai-agent-lead-sent ' + (ok ? 'is-ok' : 'is-fail') }, [
       el('span', { class: 'ai-agent-lead-sent__icon', 'aria-hidden': 'true', text: ok ? '✓' : '!' }),
@@ -331,6 +357,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: state.history.slice(-MAX_HISTORY),
+          lang: IS_EN ? 'en' : 'ar',
           context: { page: 'home' },
         }),
         signal: state.abortController.signal,
@@ -340,9 +367,13 @@
         const errBody = await res.json().catch(() => ({}));
         botBubble.classList.remove('is-typing');
         if (errBody.error === 'rate_limited') {
-          botBubble.textContent = 'وصلت للحد الأقصى من الرسائل في هذه الساعة. حاول لاحقاً، أو تواصل واتساب +966502010911 مباشرة.';
+          botBubble.textContent = IS_EN
+            ? 'You have reached the message limit for this hour. Try again later or contact us on WhatsApp +966502010911.'
+            : 'وصلت للحد الأقصى من الرسائل في هذه الساعة. حاول لاحقاً، أو تواصل واتساب +966502010911 مباشرة.';
         } else {
-          botBubble.textContent = 'تعذّر الاتصال. حاول مرة أخرى، أو تواصل واتساب +966502010911.';
+          botBubble.textContent = IS_EN
+            ? 'Connection failed. Please try again or contact us on WhatsApp +966502010911.'
+            : 'تعذّر الاتصال. حاول مرة أخرى، أو تواصل واتساب +966502010911.';
         }
         setStreaming(false);
         return;
@@ -350,7 +381,9 @@
 
       if (!res.body || !res.body.getReader) {
         botBubble.classList.remove('is-typing');
-        botBubble.textContent = 'متصفحك لا يدعم البث. حدّث المتصفح أو تواصل واتساب +966502010911.';
+        botBubble.textContent = IS_EN
+          ? 'Your browser does not support streaming. Please update your browser or contact us on WhatsApp +966502010911.'
+          : 'متصفحك لا يدعم البث. حدّث المتصفح أو تواصل واتساب +966502010911.';
         setStreaming(false);
         return;
       }
@@ -382,7 +415,9 @@
           }
           if (obj.error) {
             botBubble.classList.remove('is-typing');
-            if (!assembledText) botBubble.textContent = 'تعذّر إكمال الرد. تواصل واتساب +966502010911.';
+            if (!assembledText) botBubble.textContent = IS_EN
+              ? 'Could not complete the response. Contact us on WhatsApp +966502010911.'
+              : 'تعذّر إكمال الرد. تواصل واتساب +966502010911.';
             continue;
           }
 
@@ -399,7 +434,10 @@
 
           if (delta && delta.tool_calls && !leadProgressShown) {
             leadProgressShown = true;
-            const progress = el('div', { class: 'ai-agent-lead-progress', text: 'جاري إرسال طلبك لفريق CDIT...' });
+            const progress = el('div', {
+              class: 'ai-agent-lead-progress',
+              text: IS_EN ? 'Sending your request to CDIT team...' : 'جاري إرسال طلبك لفريق CDIT...',
+            });
             messages.appendChild(progress);
             scrollToBottom();
             // سيُستبدل بشريحة "تم الإرسال" عند وصول event: lead_sent
@@ -417,7 +455,9 @@
       if (err && err.name === 'AbortError') {
         if (!assembledText) botBubble.remove();
       } else {
-        if (!assembledText) botBubble.textContent = 'انقطع الاتصال. حاول مرة أخرى.';
+        if (!assembledText) botBubble.textContent = IS_EN
+          ? 'Connection lost. Please try again.'
+          : 'انقطع الاتصال. حاول مرة أخرى.';
       }
     } finally {
       setStreaming(false);

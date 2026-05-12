@@ -59,18 +59,40 @@
     return ref.substring(0, 50);
   }
 
+  function countryFlag(code) {
+    if (!code || code.length !== 2) return '';
+    return code.toUpperCase().replace(/./g, function (c) {
+      return String.fromCodePoint(c.charCodeAt(0) + 127397);
+    });
+  }
+
+  function fetchGeo() {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 3000) : null;
+    return fetch('https://ipapi.co/json/', controller ? { signal: controller.signal } : {})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (timer) clearTimeout(timer);
+        return {
+          country: d.country_name || '',
+          code: d.country_code || '',
+          city: d.city || ''
+        };
+      })
+      .catch(function () { return { country: '', code: '', city: '' }; });
+  }
+
   function sendNotification() {
-    const proxyUrl = window.CDIT_TG_PROXY_URL;
+    var proxyUrl = window.CDIT_TG_PROXY_URL;
     if (!proxyUrl || proxyUrl.includes('YOUR-ACCOUNT')) {
-      // Worker URL not configured yet — skip silently to avoid noise during setup.
       return;
     }
 
-    const { device, browser } = getDeviceInfo();
-    const pageName = getPageName();
-    const referrer = getReferrer();
-    const now = new Date();
-    const timeStr = now.toLocaleString('ar-SA', {
+    var deviceInfo = getDeviceInfo();
+    var pageName = getPageName();
+    var referrer = getReferrer();
+    var now = new Date();
+    var timeStr = now.toLocaleString('ar-SA', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -80,21 +102,27 @@
       hour12: true
     });
 
-    const message = `🔔 *زيارة جديدة لموقع CDIT*
+    fetchGeo().then(function (geo) {
+      var locationLine = '';
+      if (geo.country) {
+        var flag = countryFlag(geo.code);
+        locationLine = '\n📍 الدولة: ' + flag + ' ' + geo.country + (geo.city ? ' — ' + geo.city : '');
+      }
 
-📄 الصفحة: ${pageName}
-🕐 الوقت: ${timeStr}
-📱 الجهاز: ${device} - ${browser}
-🌐 اللغة: ${navigator.language || 'غير محدد'}
-🔗 من: ${referrer}`;
+      var message = '🔔 *زيارة جديدة لموقع CDIT*\n\n'
+        + '📄 الصفحة: ' + pageName + '\n'
+        + '🕐 الوقت: ' + timeStr
+        + locationLine + '\n'
+        + '📱 الجهاز: ' + deviceInfo.device + ' - ' + deviceInfo.browser + '\n'
+        + '🌐 اللغة: ' + (navigator.language || 'غير محدد') + '\n'
+        + '🔗 من: ' + referrer;
 
-    fetch(proxyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'visit', message }),
-      keepalive: true
-    }).catch(function () {
-      // Silently fail — visitors shouldn't see anything
+      fetch(proxyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'visit', message: message }),
+        keepalive: true
+      }).catch(function () {});
     });
   }
 

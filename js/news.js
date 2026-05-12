@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const NEWS_URL = 'data/news.json';
+  const NEWS_URL = window.CDIT_NEWS_URL || 'data/news.json';
   const CACHE_KEY = 'cdit_news_v1';
   const CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 
