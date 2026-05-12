@@ -3,6 +3,7 @@
  * via the CDIT Cloudflare Worker proxy. No bot token is exposed in this file.
  *
  * Worker URL is read from window.CDIT_TG_PROXY_URL (set by js/main.js).
+ * Country/city detection happens server-side via request.cf in the Worker — no external API needed.
  * See worker/README.md for deployment instructions.
  */
 (function () {
@@ -59,29 +60,6 @@
     return ref.substring(0, 50);
   }
 
-  function countryFlag(code) {
-    if (!code || code.length !== 2) return '';
-    return code.toUpperCase().replace(/./g, function (c) {
-      return String.fromCodePoint(c.charCodeAt(0) + 127397);
-    });
-  }
-
-  function fetchGeo() {
-    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var timer = controller ? setTimeout(function () { controller.abort(); }, 3000) : null;
-    return fetch('https://ipapi.co/json/', controller ? { signal: controller.signal } : {})
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (timer) clearTimeout(timer);
-        return {
-          country: d.country_name || '',
-          code: d.country_code || '',
-          city: d.city || ''
-        };
-      })
-      .catch(function () { return { country: '', code: '', city: '' }; });
-  }
-
   function sendNotification() {
     var proxyUrl = window.CDIT_TG_PROXY_URL;
     if (!proxyUrl || proxyUrl.includes('YOUR-ACCOUNT')) {
@@ -102,28 +80,19 @@
       hour12: true
     });
 
-    fetchGeo().then(function (geo) {
-      var locationLine = '';
-      if (geo.country) {
-        var flag = countryFlag(geo.code);
-        locationLine = '\n📍 الدولة: ' + flag + ' ' + geo.country + (geo.city ? ' — ' + geo.city : '');
-      }
+    var message = '🔔 *زيارة جديدة لموقع CDIT*\n\n'
+      + '📄 الصفحة: ' + pageName + '\n'
+      + '🕐 الوقت: ' + timeStr + '\n'
+      + '📱 الجهاز: ' + deviceInfo.device + ' - ' + deviceInfo.browser + '\n'
+      + '🌐 اللغة: ' + (navigator.language || 'غير محدد') + '\n'
+      + '🔗 من: ' + referrer;
 
-      var message = '🔔 *زيارة جديدة لموقع CDIT*\n\n'
-        + '📄 الصفحة: ' + pageName + '\n'
-        + '🕐 الوقت: ' + timeStr
-        + locationLine + '\n'
-        + '📱 الجهاز: ' + deviceInfo.device + ' - ' + deviceInfo.browser + '\n'
-        + '🌐 اللغة: ' + (navigator.language || 'غير محدد') + '\n'
-        + '🔗 من: ' + referrer;
-
-      fetch(proxyUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'visit', message: message }),
-        keepalive: true
-      }).catch(function () {});
-    });
+    fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'visit', message: message }),
+      keepalive: true
+    }).catch(function () {});
   }
 
   if (document.readyState === 'complete') {

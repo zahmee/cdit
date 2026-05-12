@@ -17,6 +17,11 @@ const ALLOWED_ORIGINS = new Set([
 
 const MAX_MESSAGE_LENGTH = 3500;
 
+function countryFlag(code) {
+  if (!code || code.length !== 2) return '';
+  return [...code.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0) + 127397)).join('');
+}
+
 function corsHeaders(origin) {
   const allowed = ALLOWED_ORIGINS.has(origin) ? origin : 'https://cdit.co';
   return {
@@ -73,12 +78,24 @@ export default {
       return jsonResponse({ error: 'bad_message' }, 400, cors);
     }
 
+    // Inject country/city from Cloudflare's edge data — free, reliable, no external API
+    let finalMessage = message;
+    if (type === 'visit') {
+      const cf = request.cf || {};
+      const country = cf.country || '';
+      const city = cf.city || '';
+      if (country) {
+        const flag = countryFlag(country);
+        finalMessage += '\n📍 الدولة: ' + flag + ' ' + country + (city ? ' — ' + city : '');
+      }
+    }
+
     const tgRes = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: env.TELEGRAM_CHAT_ID,
-        text: message,
+        text: finalMessage,
         parse_mode: 'Markdown',
         disable_web_page_preview: true,
         disable_notification: type === 'visit',
