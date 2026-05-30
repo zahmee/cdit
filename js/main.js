@@ -169,6 +169,13 @@ function getCampaignParams() {
   return out;
 }
 
+// Escape Telegram legacy-Markdown control chars so user/campaign values (names,
+// utm_* with underscores, etc.) can't break message parsing and drop the lead.
+// The worker sends with parse_mode:'Markdown'; an unbalanced _ * ` [ causes a 400.
+function escapeMd(s) {
+  return String(s == null ? '' : s).replace(/[_*`\[]/g, '\\$&');
+}
+
 function sendFormToTelegram(fields) {
   const now = new Date();
   const timeStr = now.toLocaleString('ar-SA', {
@@ -179,13 +186,13 @@ function sendFormToTelegram(fields) {
   const message = `📬 *رسالة جديدة من موقع CDIT*
 
 ━━━━━━━━━━━━━━━━━━
-👤 *الاسم:* ${fields.name || '—'}
-📱 *الجوال:* ${fields.phone || '—'}
-📧 *البريد:* ${fields.email || '—'}
-🔧 *الخدمة:* ${fields.service || '—'}
+👤 *الاسم:* ${escapeMd(fields.name) || '—'}
+📱 *الجوال:* ${escapeMd(fields.phone) || '—'}
+📧 *البريد:* ${escapeMd(fields.email) || '—'}
+🔧 *الخدمة:* ${escapeMd(fields.service) || '—'}
 
 💬 *الرسالة:*
-${fields.message || '—'}
+${escapeMd(fields.message) || '—'}
 ━━━━━━━━━━━━━━━━━━
 
 🕐 *الوقت:* ${timeStr}
@@ -241,9 +248,9 @@ function sendLeadToTelegram(fields, camp) {
   let message = `🎯 *طلب تجربة جديد — حملة إعلانية*
 
 ━━━━━━━━━━━━━━━━━━
-👤 *الاسم:* ${fields.name || '—'}
-📱 *الجوال:* ${fields.phone || '—'}
-🏢 *نوع النشاط:* ${fields.activity || '—'}
+👤 *الاسم:* ${escapeMd(fields.name) || '—'}
+📱 *الجوال:* ${escapeMd(fields.phone) || '—'}
+🏢 *نوع النشاط:* ${escapeMd(fields.activity) || '—'}
 ━━━━━━━━━━━━━━━━━━
 
 🕐 *الوقت:* ${timeStr}
@@ -251,10 +258,10 @@ function sendLeadToTelegram(fields, camp) {
 
   if (camp && (camp.gclid || camp.utm_campaign || camp.utm_source || camp.utm_term)) {
     message += `\n\n📊 *مصدر الحملة:*`;
-    if (camp.utm_source) message += `\n• المصدر: ${camp.utm_source}`;
-    if (camp.utm_campaign) message += `\n• الحملة: ${camp.utm_campaign}`;
-    if (camp.utm_term) message += `\n• الكلمة: ${camp.utm_term}`;
-    if (camp.gclid) message += `\n• gclid: \`${camp.gclid}\``;
+    if (camp.utm_source) message += `\n• المصدر: ${escapeMd(camp.utm_source)}`;
+    if (camp.utm_campaign) message += `\n• الحملة: ${escapeMd(camp.utm_campaign)}`;
+    if (camp.utm_term) message += `\n• الكلمة: ${escapeMd(camp.utm_term)}`;
+    if (camp.gclid) message += `\n• gclid: ${escapeMd(camp.gclid)}`;
   }
 
   return fetch(window.CDIT_TG_PROXY_URL, {
