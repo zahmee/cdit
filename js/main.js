@@ -119,12 +119,27 @@ window.CDIT_GADS_CONVERSION_LABEL = window.CDIT_GADS_CONVERSION_LABEL || 'pb4PCM
 
 // Fire the "بدء تجربة مجانية" conversion. Called only on confirmed lead actions
 // (trial form submit, AI assistant lead_sent). Safe no-op if gtag isn't loaded.
+// Logs to the console on fire + on send so it can be verified without Tag Assistant.
 window.cditTrackConversion = function () {
   const id = window.CDIT_GADS_ID;
   const label = window.CDIT_GADS_CONVERSION_LABEL;
-  if (typeof window.gtag !== 'function') return;
-  if (!id || !label || id.indexOf('XXXX') !== -1) return;
-  window.gtag('event', 'conversion', { send_to: id + '/' + label });
+  if (typeof window.gtag !== 'function') {
+    console.warn('[CDIT] gtag غير محمّل — تم تخطّي حدث التحويل');
+    return;
+  }
+  if (!id || !label || id.indexOf('XXXX') !== -1) {
+    console.warn('[CDIT] معرّف/وسم Google Ads غير مضبوط — تم تخطّي حدث التحويل');
+    return;
+  }
+  const sendTo = id + '/' + label;
+  console.log('[CDIT] إطلاق حدث تحويل Google Ads →', sendTo);
+  window.gtag('event', 'conversion', {
+    send_to: sendTo,
+    // يؤكّد وصول الحدث فعلاً لجوجل (يظهر في Console حتى لو انقطع Tag Assistant)
+    event_callback: function () {
+      console.log('[CDIT] ✓ تم إرسال حدث التحويل إلى Google →', sendTo);
+    },
+  });
 };
 
 // Read Google Ads click id + UTM params from the URL, persisting gclid for ~30 days
