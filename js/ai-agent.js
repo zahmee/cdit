@@ -410,6 +410,10 @@
 
           // حدث صناعي من الـ Worker بعد إرسال الـ lead
           if (obj.event === 'lead_sent') {
+            // عميل محتمل مؤكَّد → سجّل تحويل Google Ads (نفس تحويل "بدء تجربة مجانية")
+            if (obj.ok && typeof window.cditTrackConversion === 'function') {
+              window.cditTrackConversion();
+            }
             showLeadConfirmation(!!obj.ok, obj.detail || '');
             continue;
           }

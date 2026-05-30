@@ -97,6 +97,63 @@ window.CDIT_TG_PROXY_URL = window.CDIT_TG_PROXY_URL || 'https://cdit-telegram-pr
 // Replace with your deployed cdit-ai-agent Worker URL. See worker/AI_AGENT_README.md for setup.
 window.CDIT_AI_AGENT_URL = window.CDIT_AI_AGENT_URL || 'https://cdit-ai-agent.zahmee.workers.dev';
 
+// ========== Google Ads — Conversion Tracking ==========
+// AW conversion ID + label from Google Ads → Tools → Conversions. See worker/ADS_TRACKING_README.md.
+// If the ID still contains the XXXX placeholder, gtag is never loaded (fails silent like the workers above).
+window.CDIT_GADS_ID = window.CDIT_GADS_ID || 'AW-352580261';
+window.CDIT_GADS_CONVERSION_LABEL = window.CDIT_GADS_CONVERSION_LABEL || 'pb4PCMbzprYcEKXlj6gB';
+
+// Load the Google global site tag once, on every page (main.js is shared site-wide).
+(function loadGtag() {
+  const id = window.CDIT_GADS_ID;
+  if (!id || id.indexOf('XXXX') !== -1) return; // not configured yet → skip silently
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', id);
+})();
+
+// Fire the "بدء تجربة مجانية" conversion. Called only on confirmed lead actions
+// (trial form submit, AI assistant lead_sent). Safe no-op if gtag isn't loaded.
+window.cditTrackConversion = function () {
+  const id = window.CDIT_GADS_ID;
+  const label = window.CDIT_GADS_CONVERSION_LABEL;
+  if (typeof window.gtag !== 'function') return;
+  if (!id || !label || id.indexOf('XXXX') !== -1) return;
+  window.gtag('event', 'conversion', { send_to: id + '/' + label });
+};
+
+// Read Google Ads click id + UTM params from the URL, persisting gclid for ~30 days
+// so it survives navigation before the lead is submitted.
+const GCLID_KEY = 'cdit_gclid_v1';
+const GCLID_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+(function persistGclid() {
+  try {
+    const gclid = new URLSearchParams(window.location.search).get('gclid');
+    if (gclid) localStorage.setItem(GCLID_KEY, JSON.stringify({ gclid, savedAt: Date.now() }));
+  } catch (e) { /* private mode / quota — ignore */ }
+})();
+
+function getCampaignParams() {
+  const out = { gclid: '', utm_source: '', utm_campaign: '', utm_term: '' };
+  try {
+    const p = new URLSearchParams(window.location.search);
+    out.gclid = p.get('gclid') || '';
+    out.utm_source = p.get('utm_source') || '';
+    out.utm_campaign = p.get('utm_campaign') || '';
+    out.utm_term = p.get('utm_term') || '';
+    if (!out.gclid) {
+      const stored = JSON.parse(localStorage.getItem(GCLID_KEY) || 'null');
+      if (stored && stored.gclid && Date.now() - stored.savedAt < GCLID_TTL_MS) out.gclid = stored.gclid;
+    }
+  } catch (e) { /* ignore */ }
+  return out;
+}
+
 function sendFormToTelegram(fields) {
   const now = new Date();
   const timeStr = now.toLocaleString('ar-SA', {
@@ -153,6 +210,77 @@ if (contactForm) {
     contactForm.reset();
     if (formContainer) formContainer.style.display = 'block';
     if (formSuccess) formSuccess.style.display = 'none';
+  });
+}
+
+// ========== Trial Request Form (tajribah.html → Telegram + Google Ads conversion) ==========
+// The primary "بدء تجربة مجانية" conversion. Captures name + phone + activity,
+// notifies the team via the Telegram proxy (type:'lead'), then fires the Ads conversion.
+function sendLeadToTelegram(fields, camp) {
+  const now = new Date();
+  const timeStr = now.toLocaleString('ar-SA', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+  });
+
+  let message = `🎯 *طلب تجربة جديد — حملة إعلانية*
+
+━━━━━━━━━━━━━━━━━━
+👤 *الاسم:* ${fields.name || '—'}
+📱 *الجوال:* ${fields.phone || '—'}
+🏢 *نوع النشاط:* ${fields.activity || '—'}
+━━━━━━━━━━━━━━━━━━
+
+🕐 *الوقت:* ${timeStr}
+🌐 *من صفحة:* طلب التجربة — cdit.co/tajribah.html`;
+
+  if (camp && (camp.gclid || camp.utm_campaign || camp.utm_source || camp.utm_term)) {
+    message += `\n\n📊 *مصدر الحملة:*`;
+    if (camp.utm_source) message += `\n• المصدر: ${camp.utm_source}`;
+    if (camp.utm_campaign) message += `\n• الحملة: ${camp.utm_campaign}`;
+    if (camp.utm_term) message += `\n• الكلمة: ${camp.utm_term}`;
+    if (camp.gclid) message += `\n• gclid: \`${camp.gclid}\``;
+  }
+
+  return fetch(window.CDIT_TG_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'lead', message }),
+    keepalive: true
+  });
+}
+
+const trialForm = document.getElementById('trial-form');
+if (trialForm) {
+  const trialContainer = document.getElementById('trial-form-container');
+  const trialSuccess = document.getElementById('trial-success');
+  const trialError = document.getElementById('trial-error');
+
+  trialForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (trialError) trialError.style.display = 'none';
+
+    const fd = new FormData(trialForm);
+    const fields = {
+      name: (fd.get('name') || '').trim(),
+      phone: (fd.get('phone') || '').trim(),
+      activity: (fd.get('activity') || '').trim(),
+    };
+
+    // Send the lead (fire-and-forget; success UI shows regardless so the visitor isn't blocked).
+    sendLeadToTelegram(fields, getCampaignParams()).catch(() => {
+      if (trialError) trialError.style.display = 'block';
+    });
+
+    // Fire the Google Ads conversion on submit (the lead action itself).
+    if (typeof window.cditTrackConversion === 'function') window.cditTrackConversion();
+
+    // Swap to the success state.
+    if (trialContainer) trialContainer.style.display = 'none';
+    if (trialSuccess) {
+      trialSuccess.style.display = 'block';
+      trialSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   });
 }
 
