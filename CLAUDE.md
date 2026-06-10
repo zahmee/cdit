@@ -47,8 +47,12 @@ The second worker `cdit-telegram-proxy` (`worker/telegram-proxy.js`) handles `vi
 
 No fabricated testimonials/clients/stats; prices are public (300/900) and must stay consistent across pages; blog/quiz regulatory claims stay generic and defer to ZATCA as the only official source; demo screenshots are real product shots from `_product-screenshots/`.
 
+## SEO / compliance assets
+
+`privacy.html` + `terms.html` (and `en/` versions) exist and are linked from every footer — keep their claims in sync with actual data practices (they currently name Cloudflare/Google/Telegram/DeepSeek as processors). `sitemap.xml` (23 URLs) + `robots.txt` at root — add new pages to the sitemap. `og-image.png` (1200x630, generated with Pillow from a real dashboard screenshot) is referenced by `og:image` + `twitter:card` tags on every page.
+
 ## Known follow-ups
 
 - `en/` inner pages (services/products/portfolio/about/contact) still have their original layout; no English sector pages or blog.
-- Privacy policy / terms footer links are still `href="#"`.
+- Google Search Console: site not yet registered/sitemap not yet submitted (needs the owner's Google account).
 - Ads campaign strategy docs: `CLAUDE-ads-context.md`, `google-ads-campaign-cdit.md`.

@@ -180,6 +180,10 @@ def build(slug, s):
   <meta property="og:title" content="%(title)s">
   <meta property="og:description" content="%(desc)s">
   <meta property="og:url" content="https://cdit.co/%(slug)s">
+  <meta property="og:image" content="https://cdit.co/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -386,7 +390,7 @@ def build(slug, s):
     </div>
     <div class="footer-bar">
       <p>© 2026 مؤسسة إبداع التطوير والبرمجة لتقنية المعلومات (CDIT). جميع الحقوق محفوظة.</p>
-      <div class="links"><a href="blog/index.html">المدونة</a><a href="tajribah.html">تجربة مجانية</a></div>
+      <div class="links"><a href="blog/index.html">المدونة</a><a href="tajribah.html">تجربة مجانية</a><a href="privacy.html">سياسة الخصوصية</a><a href="terms.html">الشروط والأحكام</a></div>
     </div>
   </footer>
 
