@@ -37,9 +37,43 @@
     'أبغى أتواصل مع أحد المتواجدين',
   ];
 
+  // ============================================================================
+  // سياق الصفحة — تحية وفقاعة دعوة مختلفة حسب الصفحة الحالية
+  // ============================================================================
+  const PAGE = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+
+  const PAGE_CONTEXT = {
+    'products.html': {
+      greeting: 'حيّاك الله 👋 أنا مساعد إبداع.\nتبغى أساعدك تختار النسخة المناسبة لنشاطك من عائلة الصدارة؟ قل لي وش نوع منشأتك وأنا أرشّح لك.',
+      teaser: 'محتار بين الإصدارات؟ قل لي نوع نشاطك وأرشّح لك الأنسب 👋',
+    },
+    'services.html': {
+      greeting: 'حيّاك الله 👋 أنا مساعد إبداع.\nعندك مشروع أو احتياج تقني؟ اشرح لي فكرتك وأوضّح لك وش يناسبها من خدماتنا.',
+      teaser: 'عندك مشروع في بالك؟ اشرح لي فكرتك وأدلّك على الخدمة المناسبة ✨',
+    },
+    'contact.html': {
+      greeting: 'حيّاك الله 👋 أنا مساعد إبداع.\nتحتاج رد سريع؟ اسألني مباشرة، أو اترك لي اسمك وجوالك وأمرّر طلبك لفريقنا فوراً.',
+      teaser: 'تحتاج رد سريع؟ اسألني هنا مباشرة 💬',
+    },
+    'tajribah.html': {
+      greeting: 'حيّاك الله 👋 أنا مساعد إبداع.\nعندك سؤال عن النظام المحاسبي قبل ما تبدأ تجربتك؟ اسألني عن التوافق مع هيئة الزكاة، المزايا، أو أي شيء يهمّك.',
+      teaser: 'عندك سؤال قبل تبدأ تجربتك؟ أنا حاضر 👋',
+    },
+    'portfolio.html': {
+      greeting: 'حيّاك الله 👋 أنا مساعد إبداع.\nتبغى تعرف أكثر عن مشاريعنا وقدراتنا؟ اسألني، وإذا عندك مشروع مشابه أرتّب لك تواصل مع فريقنا.',
+      teaser: 'عندك مشروع مشابه لأعمالنا؟ خبرني عنه ✨',
+    },
+    'news.html': {
+      greeting: 'حيّاك الله 👋 أنا مساعد إبداع.\nأقدر أساعدك في معرفة خدماتنا ومنتجاتنا، أو أرتب لك تواصل مع فريقنا. كيف أخدمك؟',
+      teaser: 'تحتاج مساعدة في أي من خدماتنا؟ اسألني 👋',
+    },
+  };
+  // الصفحات القطاعية (sector-*.html) تأخذ سياق صفحة التجربة نفسه
+  const PAGE_CTX = PAGE_CONTEXT[PAGE] || (PAGE.indexOf('sector-') === 0 ? PAGE_CONTEXT['tajribah.html'] : null);
+
   const GREETING = IS_EN
     ? "Hello! I'm CDIT's smart assistant 👋\nI can help you learn about our services and products, or connect you with our team. How can I help you today?"
-    : 'مرحباً، أنا مساعد إبداع 👋\nأقدر أساعدك في معرفة خدماتنا، منتجاتنا، أو أرتب لك تواصل مع أحد المتواجدين الآن. كيف أقدر أخدمك؟';
+    : (PAGE_CTX ? PAGE_CTX.greeting : 'مرحباً، أنا مساعد إبداع 👋\nأقدر أساعدك في معرفة خدماتنا، منتجاتنا، أو أرتب لك تواصل مع أحد المتواجدين الآن. كيف أقدر أخدمك؟');
 
   // ============================================================================
   // Helpers
@@ -286,6 +320,64 @@
   const heroTrigger = document.getElementById('ai-agent-hero-trigger');
   if (heroTrigger) heroTrigger.addEventListener('click', openPanel);
 
+  // ============================================================================
+  // فقاعة الدعوة السياقية — تظهر مرة واحدة بالجلسة بعد ٧ ثوانٍ ما لم تُفتح اللوحة
+  // ============================================================================
+  const TEASER_SEEN_KEY = 'cdit_ai_teaser_seen';
+  if (PAGE_CTX && PAGE_CTX.teaser && !IS_EN) {
+    let teaserSeen = false;
+    try { teaserSeen = sessionStorage.getItem(TEASER_SEEN_KEY) === '1'; } catch {}
+
+    if (!teaserSeen) {
+      const teaser = el('div', { class: 'ai-agent-teaser', role: 'button', tabindex: '0' }, [
+        document.createTextNode(PAGE_CTX.teaser),
+      ]);
+      const teaserClose = el('button', {
+        type: 'button',
+        class: 'ai-agent-teaser__close',
+        'aria-label': 'إغلاق',
+        text: '×',
+      });
+      teaser.appendChild(teaserClose);
+      root.appendChild(teaser);
+
+      function markTeaserSeen() {
+        try { sessionStorage.setItem(TEASER_SEEN_KEY, '1'); } catch {}
+      }
+      function hideTeaser() {
+        teaser.classList.remove('is-visible');
+        markTeaserSeen();
+      }
+
+      teaserClose.addEventListener('click', (e) => { e.stopPropagation(); hideTeaser(); });
+      teaser.addEventListener('click', () => { hideTeaser(); openPanel(); });
+      teaser.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hideTeaser(); openPanel(); }
+      });
+
+      setTimeout(() => {
+        if (!panel.classList.contains('is-open')) teaser.classList.add('is-visible');
+      }, 7000);
+      // اختفاء تلقائي بعد ٢٠ ثانية إن لم يتفاعل معها الزائر (دون اعتبارها "مُشاهدة")
+      setTimeout(() => teaser.classList.remove('is-visible'), 27000);
+
+      // افتُحت اللوحة بأي طريقة → أخفِ الفقاعة نهائياً
+      const origOpenPanel = openPanel;
+      // eslint-disable-next-line no-func-assign
+      openPanel = function () {
+        teaser.classList.remove('is-visible');
+        markTeaserSeen();
+        origOpenPanel();
+      };
+      chip.removeEventListener('click', origOpenPanel);
+      chip.addEventListener('click', openPanel);
+      if (heroTrigger) {
+        heroTrigger.removeEventListener('click', origOpenPanel);
+        heroTrigger.addEventListener('click', openPanel);
+      }
+    }
+  }
+
   // إظهار الشريحة بعد التمرير عن الـ hero
   const hero = document.querySelector('.hero');
   if (hero && 'IntersectionObserver' in window) {
@@ -358,7 +450,7 @@
         body: JSON.stringify({
           messages: state.history.slice(-MAX_HISTORY),
           lang: IS_EN ? 'en' : 'ar',
-          context: { page: 'home' },
+          context: { page: PAGE },
         }),
         signal: state.abortController.signal,
       });

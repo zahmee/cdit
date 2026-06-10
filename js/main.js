@@ -254,7 +254,7 @@ function sendLeadToTelegram(fields, camp) {
 ━━━━━━━━━━━━━━━━━━
 
 🕐 *الوقت:* ${timeStr}
-🌐 *من صفحة:* طلب التجربة — cdit.co/tajribah.html`;
+🌐 *من صفحة:* طلب التجربة — cdit.co${escapeMd(window.location.pathname)}`;
 
   if (camp && (camp.gclid || camp.utm_campaign || camp.utm_source || camp.utm_term)) {
     message += `\n\n📊 *مصدر الحملة:*`;
@@ -442,3 +442,33 @@ async function initPrayerWidget() {
 }
 
 initPrayerWidget();
+
+// ========== Scroll Reveal ==========
+// Auto-tags common cards site-wide (no HTML edits needed) plus anything with
+// an explicit .reveal class, then fades each in on first intersection.
+// prefers-reduced-motion is handled in CSS (reveal is a no-op there).
+(function initScrollReveal() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const AUTO_SELECTORS = '.service-card, .why-card, .edition-teaser, .post-card, .stat-item, .sector-pain';
+  document.querySelectorAll(AUTO_SELECTORS).forEach(el => el.classList.add('reveal'));
+
+  // Stagger siblings: 2nd card +90ms, 3rd +180ms... capped so long grids don't lag
+  document.querySelectorAll('.reveal').forEach(el => {
+    if (el.style.getPropertyValue('--reveal-delay')) return; // explicit delay wins
+    const siblings = el.parentElement ? Array.from(el.parentElement.children).filter(c => c.classList.contains('reveal')) : [];
+    const idx = siblings.indexOf(el);
+    if (idx > 0) el.style.setProperty('--reveal-delay', Math.min(idx * 90, 450) + 'ms');
+  });
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+})();
