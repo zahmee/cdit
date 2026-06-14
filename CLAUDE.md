@@ -49,10 +49,16 @@ No fabricated testimonials/clients/stats; prices are public (300/900) and must s
 
 ## SEO / compliance assets
 
-`privacy.html` + `terms.html` (and `en/` versions) exist and are linked from every footer — keep their claims in sync with actual data practices (they currently name Cloudflare/Google/Telegram/DeepSeek as processors). `sitemap.xml` (23 URLs) + `robots.txt` at root — add new pages to the sitemap. `og-image.png` (1200x630, generated with Pillow from a real dashboard screenshot) is referenced by `og:image` + `twitter:card` tags on every page.
+`privacy.html` + `terms.html` (and `en/` versions) exist and are linked from every footer — keep their claims in sync with actual data practices (they currently name Cloudflare/Google/Telegram/DeepSeek as processors). `og-image.png` (1200x630, generated with Pillow from a real dashboard screenshot) is referenced by `og:image` + `twitter:card` tags on every page.
+
+**SEO conventions (hardened 2026-06-14 — preserve when adding/editing pages):**
+- Every indexable page has a self-referencing `<link rel="canonical">` placed right after the favicon `<link rel="icon">`. The 9 bilingual pairs (`/`, services, products, portfolio, about, contact, tajribah, privacy, terms — ar root ↔ `en/`) also carry reciprocal `hreflang` (`ar` / `en` / `x-default`→the ar URL). Unpaired pages (news, sector-*, blog/*) have canonical only. `zoho-domain-verification.html` is intentionally bare (no canonical).
+- Internal links point at canonical/directory URLs, never `index.html`: `./` (same-dir home), `../` (root home from `en/` or `blog/`), `blog/`, `en/`. Active-nav highlighting in `js/main.js` uses `navNorm` to compare resolved pathnames, so `/x/` == `/x/index.html` — don't reintroduce `index.html` hrefs.
+- `sitemap.xml` lists 27 URLs (all real pages incl. privacy/terms ar+en; excludes redirect stubs). When adding a page: add it to the sitemap AND give it canonical (+hreflang if it has a language pair). `robots.txt` is just `Allow: /` + the `Sitemap:` line.
+- `/contact-us` is a redirect stub (`contact-us/index.html` → `/contact.html`) for a legacy WordPress URL; all other legacy `wp-*` URLs are deliberately left to 404.
 
 ## Known follow-ups
 
 - `en/` inner pages (services/products/portfolio/about/contact) still have their original layout; no English sector pages or blog.
-- Google Search Console: site not yet registered/sitemap not yet submitted (needs the owner's Google account).
+- Google Search Console: site IS registered and `sitemap.xml` was submitted 2026-06-14 (27 pages discovered, status "success"). The domain previously ran a WordPress/Elementor site, so the SC "404" report is all legacy `wp-*` / `/أهلا-بالعالم/` URLs (correct to leave 404) and "page with redirect" is just `http`→`https` + `www`→apex (correct, no action). canonical/hreflang + internal-link canonicalization were shipped the same day.
 - Ads campaign strategy docs: `CLAUDE-ads-context.md`, `google-ads-campaign-cdit.md`.
