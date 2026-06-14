@@ -33,10 +33,12 @@ if (mobileToggle && mobileMenu) {
 }
 
 // ========== Active Nav Link ==========
-const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+// Compare resolved pathnames so '/en/' == '/en/index.html' and cross-dir links
+// (language switch, root logo) never match the current page by accident.
+const navNorm = (u) => new URL(u, window.location.href).pathname.replace(/(^|\/)index\.html$/, '$1');
+const here = navNorm(window.location.href);
 document.querySelectorAll('.nav-link').forEach(link => {
-  const href = link.getAttribute('href');
-  if (href === currentPath || (currentPath === '' && href === 'index.html')) {
+  if (navNorm(link.href) === here) {
     link.classList.add('active');
   }
 });
