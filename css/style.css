@@ -1094,6 +1094,9 @@ footer.main-footer { background: var(--secondary); color: #fff; }
 .project-card .info p { color: var(--gray-500); font-size: 0.875rem; margin-bottom: 1.25rem; }
 .project-card .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .project-card .tags span { font-size: 0.75rem; background: var(--gray-100); color: var(--gray-600); padding: 0.25rem 0.75rem; border-radius: 9999px; }
+.project-card .proj-link { display: inline-flex; align-items: center; gap: 0.45rem; margin-top: 1.1rem; font-size: 0.85rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+.project-card .proj-link svg { width: 1.05rem; height: 1.05rem; }
+.project-card .proj-link:hover { text-decoration: underline; }
 
 @media (min-width: 768px) {
   .portfolio-grid { grid-template-columns: repeat(2, 1fr); }
