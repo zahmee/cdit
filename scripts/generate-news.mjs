@@ -196,7 +196,7 @@ async function main() {
 
   const out = {
     generated_at: new Date().toISOString(),
-    model: 'deepseek-chat',
+    model: 'deepseek-v4-flash',
     count: items.length,
     items,
   };
