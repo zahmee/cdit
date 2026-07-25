@@ -22,7 +22,12 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
-const MODEL = 'deepseek-chat';
+// deepseek-chat / deepseek-reasoner were retired 2026-07-24; deepseek-v4-flash
+// is the direct replacement. V4 defaults thinking ON — we force it OFF in the
+// request body below because (a) in thinking mode with tool_choice:'auto' the
+// model may skip the tool call and reply as free text (lost leads), and
+// (b) reasoning_content deltas would pollute the SSE stream the frontend parses.
+const MODEL = 'deepseek-v4-flash';
 const MAX_INPUT_MESSAGES = 20;
 const MAX_INPUT_CHARS = 8000;
 const RATE_LIMIT_PER_HOUR = 20;
@@ -445,6 +450,7 @@ export default {
       tools: TOOLS,
       tool_choice: 'auto',
       temperature: 0.4,
+      thinking: { type: 'disabled' }, // non-thinking mode — see MODEL note above
     };
 
     let upstream;

@@ -113,7 +113,8 @@ window.CDIT_AI_AGENT_URL = window.CDIT_AI_AGENT_URL || 'https://cdit-ai-agent.za
 
 ## التكلفة المتوقعة (DeepSeek)
 
-أسعار `deepseek-chat` مرجعية (تحقّق من <https://platform.deepseek.com/usage>):
+الموديل الآن `deepseek-v4-flash` (بديل `deepseek-chat` بعد تقاعده في 2026-07-24، بوضع non-thinking).
+الأرقام التالية كانت مرجع `deepseek-chat` القديم وتُعطي تقديراً للحجم فقط — **تحقّق من أسعار v4-flash الحالية** من <https://platform.deepseek.com/usage>:
 - مدخلات cache hit: ~$0.014 / مليون توكن
 - مدخلات cache miss: ~$0.27 / مليون توكن
 - مخرجات: ~$1.10 / مليون توكن
