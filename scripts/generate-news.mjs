@@ -19,6 +19,7 @@ if (!DEEPSEEK_KEY) {
 
 const TARGET_ITEMS = 20;
 const MAX_AGE_HOURS = 48;
+const MAX_RETRIES = 3;
 const HN_URL = 'https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30';
 const TC_URL = 'https://techcrunch.com/feed/';
 
@@ -89,7 +90,20 @@ async function fetchTechCrunch() {
 
 // ---------- DeepSeek ----------
 
-async function rewriteWithDeepSeek(item) {
+// Pull the JSON object out of a model response that may be wrapped in
+// ```json fences or padded with stray prose/BOM before the first brace.
+function extractJsonObject(text) {
+  let t = text.trim().replace(/^﻿/, '');
+  if (t.startsWith('```')) {
+    t = t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  }
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if (start !== -1 && end > start) t = t.slice(start, end + 1);
+  return t;
+}
+
+async function callDeepSeekOnce(item) {
   const userPrompt = `العنوان الإنجليزي: ${item.title_en}\nالمصدر: ${item.source}\nالرابط: ${item.url}`;
 
   const res = await fetch('https://api.deepseek.com/chat/completions', {
@@ -105,23 +119,46 @@ async function rewriteWithDeepSeek(item) {
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.7,
-      max_tokens: 400,
+      // Arabic is ~1 token/char, so the JSON payload needs generous headroom —
+      // 400 truncated summaries mid-string and broke JSON.parse.
+      max_tokens: 800,
       response_format: { type: 'json_object' },
+      // deepseek-v4-flash replaced the retired deepseek-chat on 2026-07-24. The
+      // V4 models default to thinking ON, which corrupts json_object output
+      // (the JSON lands in a reasoning field) — force non-thinking mode.
+      thinking: { type: 'disabled' },
     }),
   });
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    throw new Error('DeepSeek ' + res.status + ': ' + body.slice(0, 200));
+    const err = new Error('DeepSeek ' + res.status + ': ' + body.slice(0, 200));
+    err.retryable = res.status === 429 || res.status >= 500;
+    throw err;
   }
 
   const json = await res.json();
-  const content = json?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Empty DeepSeek response');
+  const choice = json?.choices?.[0];
+  const content = choice?.message?.content;
+  if (!content || !content.trim()) {
+    const err = new Error('Empty DeepSeek response' + (choice?.finish_reason ? ` (finish_reason=${choice.finish_reason})` : ''));
+    err.retryable = true; // transient — DeepSeek returns empty content under load
+    throw err;
+  }
 
-  const parsed = JSON.parse(content);
+  let parsed;
+  try {
+    parsed = JSON.parse(extractJsonObject(content));
+  } catch (e) {
+    const err = new Error(e.message + (choice?.finish_reason === 'length' ? ' (truncated: finish_reason=length)' : ''));
+    err.retryable = true; // a fresh generation may not truncate / malform
+    throw err;
+  }
+
   if (!parsed.title_ar || !parsed.summary_ar || !parsed.emoji || !parsed.tag) {
-    throw new Error('DeepSeek output missing fields: ' + content.slice(0, 200));
+    const err = new Error('DeepSeek output missing fields: ' + content.slice(0, 200));
+    err.retryable = true;
+    throw err;
   }
 
   return {
@@ -134,6 +171,20 @@ async function rewriteWithDeepSeek(item) {
     tag: String(parsed.tag).trim().slice(0, 30),
     fetched_at: item.fetched_at,
   };
+}
+
+async function rewriteWithDeepSeek(item) {
+  let lastErr;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await callDeepSeekOnce(item);
+    } catch (e) {
+      lastErr = e;
+      if (!e.retryable || attempt === MAX_RETRIES) throw e;
+      await new Promise(r => setTimeout(r, 500 * attempt)); // linear backoff
+    }
+  }
+  throw lastErr;
 }
 
 // ---------- Pipeline ----------
@@ -168,7 +219,7 @@ async function main() {
   ]);
   console.log(`Got ${hn.length} HN + ${tc.length} TechCrunch items`);
 
-  const candidates = dedupe([...hn, ...tc]).slice(0, TARGET_ITEMS + 5);
+  const candidates = dedupe([...hn, ...tc]).slice(0, TARGET_ITEMS + 12);
   if (candidates.length === 0) {
     console.error('No candidate items. Aborting.');
     process.exit(1);
