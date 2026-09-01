@@ -25,6 +25,11 @@ compatibility_date = "2026-05-10"
 # workers.dev route must stay enabled. Do not remove this line.
 workers_dev = true
 
+# Versioned preview hostnames are enabled by default when workers_dev is on.
+# This Worker holds the DeepSeek key, so keep the surface to the one hostname
+# the site actually calls.
+preview_urls = false
+
 # Rate limiting: 20 messages per IP per hour. checkRateLimit() fails OPEN when
 # this binding is absent, so a deploy that dropped it would silently remove the
 # limit rather than error. Namespace: cdit-ai-rate-limit.

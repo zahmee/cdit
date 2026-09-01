@@ -78,6 +78,18 @@
   // ============================================================================
   // Helpers
   // ============================================================================
+
+  // الوكيل أحياناً يُخرج Markdown رغم أن الـ system prompt يمنعه، والفقاعات
+  // تُعرض بـ textContent — فتصل العلامات للزائر حرفياً ("**الصدارة الكامل**").
+  // ننظّفها هنا لا في الـ prompt: أي تعديل على SYSTEM_PROMPT يكسر الـ prompt
+  // cache عند DeepSeek. الحذف بلا اشتراط زوج مغلق مقصود، حتى لا تظهر النجوم
+  // لحظة وصول العلامة الأولى قبل نظيرتها أثناء البثّ.
+  function stripMarkdown(text) {
+    return text
+      .replace(/\*\*/g, '')
+      .replace(/^[ \t]{0,3}#{1,6}[ \t]+/gm, '');
+  }
+
   function el(tag, props, children) {
     const node = document.createElement(tag);
     if (props) {
@@ -524,7 +536,7 @@
           if (delta && typeof delta.content === 'string' && delta.content) {
             botBubble.classList.remove('is-typing');
             assembledText += delta.content;
-            botBubble.textContent = assembledText;
+            botBubble.textContent = stripMarkdown(assembledText);
             scrollToBottom();
           }
 
@@ -543,7 +555,7 @@
       }
 
       if (assembledText) {
-        state.history.push({ role: 'assistant', content: assembledText });
+        state.history.push({ role: 'assistant', content: stripMarkdown(assembledText) });
         saveHistory(state.history);
       }
     } catch (err) {

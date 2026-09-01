@@ -15,4 +15,9 @@ compatibility_date = "2026-05-09"
 # The site posts to https://cdit-telegram-proxy.zahmee.workers.dev.
 workers_dev = true
 
+# Versioned preview hostnames are enabled by default when workers_dev is on.
+# This Worker holds the DeepSeek key, so keep the surface to the one hostname
+# the site actually calls.
+preview_urls = false
+
 # No KV / other bindings on this Worker.
