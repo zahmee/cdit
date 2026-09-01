@@ -1,0 +1,18 @@
+# cdit-telegram-proxy — deployment config
+#
+#   npx wrangler deploy --config worker/wrangler.telegram-proxy.toml
+#
+# Secrets are NOT declared here and are NOT touched by a deploy:
+#   npx wrangler secret put TELEGRAM_BOT_TOKEN --config worker/wrangler.telegram-proxy.toml
+#   npx wrangler secret put TELEGRAM_CHAT_ID   --config worker/wrangler.telegram-proxy.toml
+
+name = "cdit-telegram-proxy"
+main = "telegram-proxy.js"
+
+# The Worker's creation date — kept so a deploy changes only the code.
+compatibility_date = "2026-05-09"
+
+# The site posts to https://cdit-telegram-proxy.zahmee.workers.dev.
+workers_dev = true
+
+# No KV / other bindings on this Worker.

@@ -13,6 +13,8 @@ Desktop.ini
 *.sublime-workspace
 
 # ===== Tooling / MCP caches =====
+# wrangler is run via npx (no package.json); this guards a stray local install
+node_modules/
 .playwright-mcp/
 .claude/
 .cache/

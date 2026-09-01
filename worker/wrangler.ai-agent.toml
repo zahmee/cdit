@@ -1,0 +1,33 @@
+# cdit-ai-agent — deployment config
+#
+#   npx wrangler deploy --config worker/wrangler.ai-agent.toml
+#
+# Why this file exists: the Worker used to be deployed by pasting the source
+# into the Cloudflare dashboard, which let the live code drift from the repo.
+# On 2026-07-25 the model name was hot-edited in the dashboard at 17:07Z while
+# the commit that added `thinking: { type: 'disabled' }` (18:22Z) never shipped
+# — production ran without it for weeks with nothing to surface the gap.
+#
+# Secrets are deliberately NOT declared here and are NOT touched by a deploy.
+# They already exist on the Worker; set/rotate them with:
+#   npx wrangler secret put DEEPSEEK_API_KEY   --config worker/wrangler.ai-agent.toml
+#   npx wrangler secret put TELEGRAM_BOT_TOKEN --config worker/wrangler.ai-agent.toml
+#   npx wrangler secret put TELEGRAM_CHAT_ID   --config worker/wrangler.ai-agent.toml
+
+name = "cdit-ai-agent"
+main = "ai-agent.js"
+
+# The Worker's creation date. Kept as-is so a deploy cannot change runtime
+# behaviour — only the code changes.
+compatibility_date = "2026-05-10"
+
+# The site calls https://cdit-ai-agent.zahmee.workers.dev directly, so the
+# workers.dev route must stay enabled. Do not remove this line.
+workers_dev = true
+
+# Rate limiting: 20 messages per IP per hour. checkRateLimit() fails OPEN when
+# this binding is absent, so a deploy that dropped it would silently remove the
+# limit rather than error. Namespace: cdit-ai-rate-limit.
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "db771e0347c54bcbb7d8e07506a1fadb"
