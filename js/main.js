@@ -85,6 +85,17 @@ if (waBtn && waPanel) {
     waBtn.classList.toggle('closed');
   });
 }
+// الرئيسية: الـ hero فيه زر واتساب وبطاقة المساعد، فنخفي الزر العائم حتى يتجاوزه الزائر
+// (نفس توقيت ظهور شريحة المساعد في ai-agent.js)
+const waFloat = document.querySelector('.whatsapp-float');
+const heroV2 = document.querySelector('.hero-v2');
+if (waFloat && heroV2 && 'IntersectionObserver' in window) {
+  waFloat.classList.add('is-tucked');
+  new IntersectionObserver(([entry]) => {
+    if (waPanel && waPanel.classList.contains('open')) return;
+    waFloat.classList.toggle('is-tucked', entry.isIntersecting);
+  }).observe(heroV2);
+}
 
 // ========== Contact Form → WhatsApp ==========
 const contactForm = document.getElementById('contact-form');

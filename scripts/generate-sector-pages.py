@@ -11,13 +11,13 @@ WA = 'https://wa.me/966502010911?text=مرحباً، أود الاستفسار �
 SECTORS = {
     'sector-contracting.html': {
         'kw': 'المقاولات',
-        'title': 'برنامج محاسبة للمقاولات معتمد ZATCA — تجربة مجانية | CDIT',
-        'desc': 'نظام محاسبي سحابي لشركات ومؤسسات المقاولات: فوترة إلكترونية معتمدة من هيئة الزكاة، فواتير دفعات ومستخلصات، وتقارير مستحقات. يبدأ من 300 ريال سنوياً مع تجربة مجانية.',
-        'h1': 'نظام محاسبي لقطاع المقاولات — فواتيرك الإلكترونية معتمدة',
-        'hero_p': 'فوترة إلكترونية معتمدة لدفعاتك ومستخلصاتك، ومتابعة مستحقاتك عند العملاء — نظام سحابي بسيط يبدأ من 300 ريال سنوياً.',
+        'title': 'برنامج محاسبة للمقاولات متوافق مع ZATCA — تجربة مجانية | CDIT',
+        'desc': 'نظام محاسبي سحابي لشركات ومؤسسات المقاولات: فوترة إلكترونية متوافقة مع متطلبات هيئة الزكاة، فواتير دفعات ومستخلصات، وتقارير مستحقات. يبدأ من 300 ريال سنوياً مع تجربة مجانية.',
+        'h1': 'نظام محاسبي لقطاع المقاولات — فواتيرك الإلكترونية نظامية',
+        'hero_p': 'فوترة إلكترونية نظامية لدفعاتك ومستخلصاتك، ومتابعة مستحقاتك عند العملاء — نظام سحابي بسيط يبدأ من 300 ريال سنوياً.',
         'why_h2': 'ليش يناسب المقاولين؟',
         'benefits': [
-            'فواتير إلكترونية معتمدة متوافقة مع المرحلة الثانية ZATCA',
+            'فواتير إلكترونية متوافقة مع المرحلة الثانية ZATCA',
             'فواتير دفعات ومستخلصات بمرجع واضح لكل عميل',
             'تقارير تكشف المستحقات المتأخرة أولاً بأول',
             'سحابي — تتابع من موقع المشروع ومحاسبك من مكتبه',
@@ -29,7 +29,7 @@ SECTORS = {
             ('تخاف من الغرامات؟', 'فواتيرك تصدر متوافقة مع الفاتورة الإلكترونية تلقائياً، فلا تنشغل بالتفاصيل النظامية.'),
         ],
         'featured': 'lite',
-        'lite_note': 'الأنسب لأغلب المقاولين — فوترة معتمدة وتقارير',
+        'lite_note': 'الأنسب لأغلب المقاولين — فوترة نظامية وتقارير',
         'full_note': 'إذا تحتاج مشتريات ومخازن لمواد البناء',
         'shots': [
             ('_product-screenshots/final/03-sales.png', 'إنشاء فاتورة مبيعات'),
@@ -41,13 +41,13 @@ SECTORS = {
     },
     'sector-law.html': {
         'kw': 'مكاتب المحاماة',
-        'title': 'برنامج فوترة لمكاتب المحاماة معتمد ZATCA — تجربة مجانية | CDIT',
-        'desc': 'نظام فوترة ومحاسبة سحابي لمكاتب المحاماة والاستشارات: فواتير أتعاب إلكترونية معتمدة من هيئة الزكاة وتقارير عملاء واضحة. يبدأ من 300 ريال سنوياً مع تجربة مجانية.',
+        'title': 'برنامج فوترة لمكاتب المحاماة متوافق مع ZATCA — تجربة مجانية | CDIT',
+        'desc': 'نظام فوترة ومحاسبة سحابي لمكاتب المحاماة والاستشارات: فواتير أتعاب إلكترونية متوافقة مع متطلبات هيئة الزكاة وتقارير عملاء واضحة. يبدأ من 300 ريال سنوياً مع تجربة مجانية.',
         'h1': 'نظام فوترة ومحاسبة لمكاتب المحاماة والاستشارات',
         'hero_p': 'أصدر فواتير أتعابك الإلكترونية بثوانٍ، وتابع حسابات عملائك بنظام سحابي بسيط لا يحتاج خبرة محاسبية — من 300 ريال سنوياً.',
         'why_h2': 'ليش يناسب مكاتب المحاماة؟',
         'benefits': [
-            'فواتير أتعاب إلكترونية معتمدة متوافقة مع ZATCA',
+            'فواتير أتعاب إلكترونية متوافقة مع ZATCA',
             'حسابات واضحة لكل عميل وقضية مالية',
             'بسيط — وقتك للقضايا لا لتعلّم المحاسبة',
             'بياناتك في حسابك الخاص بالنظام',
@@ -71,13 +71,13 @@ SECTORS = {
     },
     'sector-engineering.html': {
         'kw': 'المكاتب الهندسية',
-        'title': 'برنامج محاسبة للمكاتب الهندسية معتمد ZATCA — تجربة مجانية | CDIT',
-        'desc': 'نظام محاسبي سحابي للمكاتب الهندسية والاستشارية: فوترة إلكترونية معتمدة لأتعاب التصميم والإشراف، متابعة دفعات المشاريع، وحضور وانصراف. يبدأ من 300 ريال سنوياً.',
+        'title': 'برنامج محاسبة للمكاتب الهندسية متوافق مع ZATCA — تجربة مجانية | CDIT',
+        'desc': 'نظام محاسبي سحابي للمكاتب الهندسية والاستشارية: فوترة إلكترونية نظامية لأتعاب التصميم والإشراف، متابعة دفعات المشاريع، وحضور وانصراف. يبدأ من 300 ريال سنوياً.',
         'h1': 'نظام محاسبي للمكاتب الهندسية والاستشارية',
-        'hero_p': 'فوترة إلكترونية معتمدة لأتعاب التصميم والإشراف، مع متابعة دفعات كل مشروع وحضور فريقك — من 300 ريال سنوياً.',
+        'hero_p': 'فوترة إلكترونية نظامية لأتعاب التصميم والإشراف، مع متابعة دفعات كل مشروع وحضور فريقك — من 300 ريال سنوياً.',
         'why_h2': 'ليش يناسب المكاتب الهندسية؟',
         'benefits': [
-            'فواتير إلكترونية معتمدة متوافقة مع المرحلة الثانية ZATCA',
+            'فواتير إلكترونية متوافقة مع المرحلة الثانية ZATCA',
             'فواتير دفعات لمراحل التصميم والإشراف',
             'حضور وانصراف لفريق المكتب',
             'تقارير جاهزة لمراجعك الضريبي',
@@ -119,7 +119,7 @@ SECTORS = {
             ('مستودع أو أكثر؟', 'الإصدار الكامل يدير المخازن والمستودعات المتعددة من نظام واحد.'),
         ],
         'featured': 'full',
-        'lite_note': 'فوترة إلكترونية معتمدة وحضور موظفين',
+        'lite_note': 'فوترة إلكترونية نظامية وحضور موظفين',
         'full_note': 'الأنسب للصيدليات — يشمل المخازن والمستودعات',
         'shots': [
             ('_product-screenshots/asbab5/05-pos-daily-sales.jpeg', 'نقطة البيع — مبيعات اليوم'),
@@ -136,7 +136,7 @@ ACTIVITIES = ['مقاولات', 'محاماة', 'مكاتب هندسية', 'دع
 CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
 
 NAV = '''      <nav class="desktop-nav">
-        <a href="index.html" class="nav-link">الرئيسية</a>
+        <a href="./" class="nav-link">الرئيسية</a>
         <a href="services.html" class="nav-link">خدماتنا</a>
         <a href="products.html" class="nav-link">منتجاتنا</a>
         <a href="portfolio.html" class="nav-link">أعمالنا</a>
@@ -193,7 +193,7 @@ def build(slug, s):
   <!-- Header -->
   <header id="main-header" class="scrolled">
     <div class="container header-inner">
-      <a href="index.html" class="logo"><div class="logo-icon">C</div><div><div class="logo-text">CDIT</div><div class="logo-sub">إبداع التطوير والبرمجة لتقنية المعلومات</div></div></a>
+      <a href="./" class="logo"><div class="logo-icon">C</div><div><div class="logo-text">CDIT</div><div class="logo-sub">إبداع التطوير والبرمجة لتقنية المعلومات</div></div></a>
 %(nav)s
       <div class="header-actions">
         <a href="tel:+966502010911" class="header-phone"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span class="ltr">+966502010911</span></a>
@@ -203,7 +203,7 @@ def build(slug, s):
     </div>
     <div class="mobile-menu" id="mobile-menu">
       <div class="container">
-        <a href="index.html" class="nav-link">الرئيسية</a>
+        <a href="./" class="nav-link">الرئيسية</a>
         <a href="services.html" class="nav-link">خدماتنا</a>
         <a href="products.html" class="nav-link">منتجاتنا</a>
         <a href="portfolio.html" class="nav-link">أعمالنا</a>
@@ -219,9 +219,10 @@ def build(slug, s):
     <!-- Hero -->
     <div class="gradient-primary text-white py-20">
       <div class="container text-center">
-        <span class="trial-badge">معتمد ومتوافق مع هيئة الزكاة والضريبة (ZATCA)</span>
+        <span class="trial-badge">متوافق مع هيئة الزكاة والضريبة والجمارك (ZATCA)</span>
         <h1 class="text-4xl sm:text-5xl font-black mb-4">%(h1)s</h1>
         <p class="text-blue-200 text-lg max-w-2xl mx-auto">%(hero_p)s</p>
+        <div class="mt-8"><a href="#trial-card" class="btn-primary-white">اطلب تجربتك المجانية <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><polyline points="19 12 12 19 5 12"/></svg></a></div>
       </div>
     </div>
 
@@ -376,7 +377,7 @@ def build(slug, s):
           <li><a href="blog/zatca-phase2-requirements.html"><span class="dot"></span>متطلبات المرحلة الثانية من الفاتورة الإلكترونية</a></li>
           <li><a href="blog/zatca-fines.html"><span class="dot"></span>غرامات الفاتورة الإلكترونية وكيف تتجنبها</a></li>
           <li><a href="blog/choose-accounting-software.html"><span class="dot"></span>كيف تختار برنامج محاسبة لمنشأتك</a></li>
-          <li><a href="blog/index.html"><span class="dot"></span>كل المقالات</a></li>
+          <li><a href="blog/"><span class="dot"></span>كل المقالات</a></li>
         </ul>
       </div>
       <div class="footer-col footer-contact">
@@ -390,7 +391,7 @@ def build(slug, s):
     </div>
     <div class="footer-bar">
       <p>© 2026 مؤسسة إبداع التطوير والبرمجة لتقنية المعلومات (CDIT). جميع الحقوق محفوظة.</p>
-      <div class="links"><a href="blog/index.html">المدونة</a><a href="tajribah.html">تجربة مجانية</a><a href="privacy.html">سياسة الخصوصية</a><a href="terms.html">الشروط والأحكام</a></div>
+      <div class="links"><a href="blog/">المدونة</a><a href="tajribah.html">تجربة مجانية</a><a href="privacy.html">سياسة الخصوصية</a><a href="terms.html">الشروط والأحكام</a></div>
     </div>
   </footer>
 

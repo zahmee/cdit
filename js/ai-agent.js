@@ -367,8 +367,23 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hideTeaser(); openPanel(); }
       });
 
+      // لا تغطِّ نموذج التجربة/التواصل. على الجوال الفقاعة تغطي حتماً زر الدعوة أو النموذج،
+      // فلا تظهر أصلاً في صفحات النماذج (الشريحة «اسأل مساعد إبداع» تبقى ظاهرة)
+      const leadForm = document.getElementById('trial-form') || document.getElementById('contact-form');
+      const suppressTeaser = !!leadForm && window.matchMedia('(max-width: 640px)').matches;
+      let leadFormInView = false;
+      if (leadForm) {
+        leadForm.addEventListener('focusin', hideTeaser);
+        if ('IntersectionObserver' in window) {
+          new IntersectionObserver(([entry]) => {
+            leadFormInView = entry.isIntersecting;
+            if (leadFormInView) teaser.classList.remove('is-visible');
+          }).observe(leadForm);
+        }
+      }
+
       setTimeout(() => {
-        if (!panel.classList.contains('is-open')) teaser.classList.add('is-visible');
+        if (!panel.classList.contains('is-open') && !leadFormInView && !suppressTeaser) teaser.classList.add('is-visible');
       }, 7000);
       // اختفاء تلقائي بعد ٢٠ ثانية إن لم يتفاعل معها الزائر (دون اعتبارها "مُشاهدة")
       setTimeout(() => teaser.classList.remove('is-visible'), 27000);

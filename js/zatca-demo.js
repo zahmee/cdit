@@ -215,11 +215,11 @@
     return IS_EN ? {
       icon: 'ok', emoji: '🔍',
       title: 'Great — now confirm your system is Phase 2 compliant',
-      body: 'Having an e-invoicing system covers Phase 1, but Phase 2 requires direct integration with the Fatoora platform according to the enforcement waves ZATCA announces. Make sure your provider supports integration — and if not, our system is certified Phase 2 compliant and you can try it for free.',
+      body: 'Having an e-invoicing system covers Phase 1, but Phase 2 requires direct integration with the Fatoora platform according to the enforcement waves ZATCA announces. Make sure your provider supports integration — and if not, our system is Phase 2 compliant and you can try it for free.',
     } : {
       icon: 'ok', emoji: '🔍',
       title: 'خطوة ممتازة — تبقّى التأكد من توافق نظامك مع المرحلة الثانية',
-      body: 'وجود نظام فوترة إلكتروني يغطي المرحلة الأولى، لكن المرحلة الثانية تتطلب الربط والتكامل المباشر مع منصة فاتورة وفق موجات الإلزام التي تعلنها الهيئة. تأكد أن مزوّدك يدعم الربط — وإن لم يكن، نظامنا معتمد ومتوافق مع المرحلة الثانية ويمكنك تجربته مجاناً.',
+      body: 'وجود نظام فوترة إلكتروني يغطي المرحلة الأولى، لكن المرحلة الثانية تتطلب الربط والتكامل المباشر مع منصة فاتورة وفق موجات الإلزام التي تعلنها الهيئة. تأكد أن مزوّدك يدعم الربط — وإن لم يكن، نظامنا متوافق مع المرحلة الثانية ويمكنك تجربته مجاناً.',
     };
   }
 
